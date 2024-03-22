@@ -39,7 +39,7 @@ from game import Agent
 from game import Actions
 import util
 import time
-import part01.search as search
+import search
 
 class GoWestAgent(Agent):
     "An agent that goes West until it can't."

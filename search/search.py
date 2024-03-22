@@ -87,11 +87,72 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
+    from game import Directions
+
+    directions = {'North': Directions.NORTH, 'South': Directions.SOUTH, 'East': Directions.EAST,
+                  'West': Directions.WEST, 'Stop': Directions.STOP}
+
+    open_nodes = util.Stack()
+    movements = []
+
+    # Open first state
+    current_state = (problem.getStartState(), [])
+    seen_before = set()
+
+    # Main loop
+    while True:
+        if problem.isGoalState(current_state[0]):
+            return current_state[1]  # Return list of actions
+
+        if current_state[0] not in seen_before:
+            seen_before.add(current_state[0])
+            for successor in problem.getSuccessors(current_state[0]):
+                # gotta track the path. 
+                new_path = current_state[1] + [successor[1]]
+                open_nodes.push((successor[0], new_path))
+
+        if open_nodes.isEmpty():
+            return []  # No solution
+
+        current_state = open_nodes.pop()
     util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+    from game import Directions
+
+    directions = {'North': Directions.NORTH, 'South': Directions.SOUTH, 'East': Directions.EAST,
+                  'West': Directions.WEST, 'Stop': Directions.STOP}
+
+    open_nodes = util.Queue()
+
+    # Open first state
+    # each node has to track all the movements up to this point.
+    current_state = (problem.getStartState(), [])
+    seen_before = set()
+
+    # Main loop
+    while True:
+        if problem.isGoalState(current_state[0]):
+            return current_state[1]  # Return list of actions
+
+        # only concerned with the point here
+        if current_state[0] not in seen_before:
+            # if we havent seen it add it to the list.
+            seen_before.add(current_state[0])
+            # process all the next steps.
+            for successor in problem.getSuccessors(current_state[0]):
+                # create the new graph node.
+                new_path = current_state[1] + [successor[1]]
+                # push the new node to the stack.
+                open_nodes.push((successor[0], new_path))
+
+        # this just keeps forever loops from happening.
+        if open_nodes.isEmpty():
+            return []  # No solution
+
+        current_state = open_nodes.pop()
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
@@ -109,6 +170,37 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    from util import PriorityQueue
+
+    # Priority queue: stores nodes with priority as the sum of path cost and heuristic estimate
+    frontier = PriorityQueue()
+    startState = problem.getStartState()
+    frontier.push((startState, [], 0), heuristic(startState, problem))
+
+    # Keeps track of visited states: {state: cost}
+    explored = {}
+
+    while not frontier.isEmpty():
+        currentState, actions, currentCost = frontier.pop()
+
+        # Goal check
+        if problem.isGoalState(currentState):
+            return actions
+
+        # Skip processing if state has been visited with a lower cost
+        if currentState in explored and explored[currentState] <= currentCost:
+            continue
+
+        explored[currentState] = currentCost
+
+        # Explore successors
+        for nextState, action, cost in problem.getSuccessors(currentState):
+            newCost = currentCost + cost
+            newActions = actions + [action]
+            frontier.update((nextState, newActions, newCost), newCost + heuristic(nextState, problem))
+
+    return []
+
     util.raiseNotDefined()
 
 
